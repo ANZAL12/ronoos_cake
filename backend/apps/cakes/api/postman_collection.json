@@ -1,0 +1,181 @@
+{
+    "info": {
+        "name": "Cake API",
+        "description": "API collection for the Cake Bakery application",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"baker_john\",\n    \"password\": \"securepass123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/login/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "login", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"new_baker\",\n    \"email\": \"newbaker@example.com\",\n    \"password\": \"newpass123\",\n    \"is_baker\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "users", ""]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Cakes",
+            "item": [
+                {
+                    "name": "Create Cake",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Classic Chocolate Cake\",\n    \"description\": \"Rich chocolate cake with chocolate ganache\",\n    \"price\": \"25.99\",\n    \"is_available\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cakes/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "cakes", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "List All Cakes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cakes/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "cakes", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Cake Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cakes/1/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "cakes", "1", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Cake",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Classic Chocolate Cake Deluxe\",\n    \"description\": \"Rich chocolate cake with chocolate ganache and fresh berries\",\n    \"price\": \"29.99\",\n    \"is_available\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cakes/1/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "cakes", "1", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Cake",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cakes/1/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "cakes", "1", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Baker's Cakes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/baker/cakes/",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "baker", "cakes", ""]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "your_access_token_here",
+            "type": "string"
+        }
+    ]
+} 

@@ -1,0 +1,104 @@
+{
+    "auth": {
+        "login": {
+            "username": "baker_john",
+            "password": "securepass123"
+        },
+        "register": {
+            "username": "new_baker",
+            "email": "newbaker@example.com",
+            "password": "newpass123",
+            "is_baker": true
+        }
+    },
+    "cakes": {
+        "create": {
+            "name": "Classic Chocolate Cake",
+            "description": "Rich chocolate cake with chocolate ganache",
+            "price": "25.99",
+            "is_available": true
+        },
+        "update": {
+            "name": "Classic Chocolate Cake Deluxe",
+            "description": "Rich chocolate cake with chocolate ganache and fresh berries",
+            "price": "29.99",
+            "is_available": true
+        },
+        "list": [
+            {
+                "name": "Vanilla Dream",
+                "description": "Light and fluffy vanilla cake with buttercream",
+                "price": "22.99",
+                "is_available": true
+            },
+            {
+                "name": "Strawberry Delight",
+                "description": "Fresh strawberry cake with cream cheese frosting",
+                "price": "27.99",
+                "is_available": true
+            },
+            {
+                "name": "Carrot Spice",
+                "description": "Spiced carrot cake with walnuts and cream cheese",
+                "price": "24.99",
+                "is_available": true
+            }
+        ]
+    },
+    "errors": {
+        "invalid_cake": {
+            "name": "",
+            "description": "Missing name",
+            "price": "not_a_number",
+            "is_available": true
+        },
+        "unauthorized": {
+            "error": "Authentication credentials were not provided"
+        },
+        "not_found": {
+            "error": "Cake not found"
+        },
+        "permission_denied": {
+            "error": "You do not have permission to perform this action"
+        }
+    },
+    "responses": {
+        "success": {
+            "id": 1,
+            "name": "Classic Chocolate Cake",
+            "description": "Rich chocolate cake with chocolate ganache",
+            "price": "25.99",
+            "baker": {
+                "id": 1,
+                "username": "baker_john",
+                "email": "baker@example.com"
+            },
+            "image": null,
+            "is_available": true,
+            "created_at": "2024-03-20T10:00:00Z",
+            "updated_at": "2024-03-20T10:00:00Z"
+        },
+        "list": {
+            "count": 3,
+            "next": null,
+            "previous": null,
+            "results": [
+                {
+                    "id": 1,
+                    "name": "Classic Chocolate Cake",
+                    "description": "Rich chocolate cake with chocolate ganache",
+                    "price": "25.99",
+                    "baker": {
+                        "id": 1,
+                        "username": "baker_john",
+                        "email": "baker@example.com"
+                    },
+                    "image": null,
+                    "is_available": true,
+                    "created_at": "2024-03-20T10:00:00Z",
+                    "updated_at": "2024-03-20T10:00:00Z"
+                }
+            ]
+        }
+    }
+} 
