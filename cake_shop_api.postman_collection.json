@@ -1,0 +1,94 @@
+{
+	"info": {
+		"_postman_id": "cake-shop-api",
+		"name": "Cake Shop API",
+		"description": "API collection for Cake Shop application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"Test@123\",\n    \"first_name\": \"Test\",\n    \"last_name\": \"User\",\n    \"is_baker\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": ["{{base_url}}"],
+							"path": ["users", ""]
+						}
+					}
+				},
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/?is_baker=true",
+							"host": ["{{base_url}}"],
+							"path": ["users", ""],
+							"query": [
+								{
+									"key": "is_baker",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/1/",
+							"host": ["{{base_url}}"],
+							"path": ["users", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Updated\",\n    \"last_name\": \"User\",\n    \"email\": \"updated@example.com\",\n    \"is_baker\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/1/",
+							"host": ["{{base_url}}"],
+							"path": ["users", "1", ""]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		}
+	]
+} 

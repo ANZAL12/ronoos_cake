@@ -1,0 +1,35 @@
+# Python files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.env
+.env
+
+# Django stuff
+db.sqlite3
+media/
+staticfiles/
+*.log
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git-specific
+*.orig
+*.rej
+
+# PostgreSQL
+*.sql

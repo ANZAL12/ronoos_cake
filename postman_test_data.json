@@ -1,0 +1,29 @@
+{
+    "create_user": {
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "Test@123",
+        "first_name": "Test",
+        "last_name": "User"
+    },
+    "list_users": {
+        "query_params": {
+            "is_baker": "true"
+        }
+    },
+    "get_user": {
+        "url_params": {
+            "pk": 1
+        }
+    },
+    "update_user": {
+        "url_params": {
+            "pk": 1
+        },
+        "data": {
+            "first_name": "Updated",
+            "last_name": "User",
+            "email": "updated@example.com"
+        }
+    }
+} 
