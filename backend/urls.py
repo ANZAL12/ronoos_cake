@@ -20,6 +20,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.http import HttpResponse
+from django.shortcuts import redirect
+
+def home(request):
+    return HttpResponse("Welcome to the homepage!")
+
+def root_redirect(request):
+    return redirect('/api/v1/')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +35,7 @@ urlpatterns = [
     path('api/v1/', include('backend.apps.users.api.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('home/', home, name='home'),
+    path('', home, name='home'),
+    path('', root_redirect),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

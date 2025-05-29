@@ -66,7 +66,9 @@ MIDDLEWARE = [
 ]
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+]
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
