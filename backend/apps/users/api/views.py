@@ -71,6 +71,76 @@ class LoginView(APIView):
                 'username': user.username,
                 'email': user.email,
                 'is_baker': user.is_baker,
-                'is_staff': user.is_staff
+                'is_staff': user.is_staff,
+                'is_customer': user.is_customer
+            }
+        })
+
+class BakerLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is None or not getattr(user, 'is_baker', False):
+            return Response({'error': 'Invalid credentials or not a baker'}, status=status.HTTP_401_UNAUTHORIZED)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_baker': user.is_baker,
+                'is_staff': user.is_staff,
+                'is_customer': user.is_customer
+            }
+        })
+
+class CustomerLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is None or not getattr(user, 'is_customer', False):
+            return Response({'error': 'Invalid credentials or not a customer'}, status=status.HTTP_401_UNAUTHORIZED)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_baker': user.is_baker,
+                'is_staff': user.is_staff,
+                'is_customer': user.is_customer
+            }
+        })
+
+class StaffLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is None or not getattr(user, 'is_staff', False):
+            return Response({'error': 'Invalid credentials or not staff'}, status=status.HTTP_401_UNAUTHORIZED)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_baker': user.is_baker,
+                'is_staff': user.is_staff,
+                'is_customer': user.is_customer
             }
         })

@@ -47,19 +47,42 @@
           <div class="input-group">
             <label for="password">Password</label>
             <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
                 <circle cx="12" cy="16" r="1" stroke="currentColor" stroke-width="2"/>
                 <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="currentColor" stroke-width="2"/>
               </svg>
               <input 
                 v-model="password" 
+                :type="showPassword ? 'text' : 'password'" 
                 id="password" 
-                type="password" 
                 required 
                 placeholder="Enter your password"
                 :class="{ 'error': error }"
               />
+              <span class="toggle-password" @click="showPassword = !showPassword">
+                <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                  <path stroke="#a0aec0" stroke-width="2" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/>
+                  <circle stroke="#a0aec0" stroke-width="2" cx="12" cy="12" r="3"/>
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                  <path stroke="#a0aec0" stroke-width="2" d="M17.94 17.94C16.12 19.25 14.13 20 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-6.06M9.53 9.53A3 3 0 0 1 12 9c1.66 0 3 1.34 3 3 0 .47-.11.91-.29 1.29M1 1l22 22"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+  
+          <div class="input-group">
+            <label for="role">Role</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <select v-model="role" id="role" required class="styled-select">
+                <option value="baker">Baker</option>
+                <option value="customer">Customer</option>
+                <option value="staff">Admin</option>
+              </select>
             </div>
           </div>
   
@@ -100,12 +123,22 @@
   const error = ref('')
   const loading = ref(false)
   const router = useRouter()
+  const role = ref('baker')
+  const showPassword = ref(false)
   
   const login = async () => {
     error.value = ''
     loading.value = true
+    let endpoint = ''
+    if (role.value === 'baker') {
+      endpoint = 'http://localhost:8000/api/v1/login/baker/'
+    } else if (role.value === 'customer') {
+      endpoint = 'http://localhost:8000/api/v1/login/customer/'
+    } else if (role.value === 'staff') {
+      endpoint = 'http://localhost:8000/api/v1/login/staff/'
+    }
     try {
-      const { data } = await axios.post('http://localhost:8000/api/v1/login/', {
+      const { data } = await axios.post(endpoint, {
         username: username.value,
         password: password.value,
       })
@@ -115,8 +148,10 @@
         router.push('/admin-welcome')
       } else if (data.user.is_baker) {
         router.push('/baker-welcome')
-      } else {
+      } else if (data.user.is_customer) {
         router.push('/home')
+      } else {
+        router.push('/login')
       }
     } catch (err) {
       error.value = 'Invalid username or password'
@@ -329,17 +364,6 @@
     position: relative;
   }
   
-  .input-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    color: #a0aec0;
-    z-index: 2;
-  }
-  
   .input-wrapper input {
     width: 100%;
     padding: 1rem 1rem 1rem 3rem;
@@ -487,5 +511,79 @@
     .login-header h2 {
       font-size: 1.75rem;
     }
+  }
+  
+  .input-wrapper {
+    position: relative;
+  }
+  
+  .input-wrapper .styled-select {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fff;
+    color: #2d3748;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  
+  .input-wrapper .styled-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  .input-wrapper .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: #a0aec0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .input-wrapper .styled-select:focus + .input-icon,
+  .input-wrapper .styled-select:not(:placeholder-shown) + .input-icon {
+    color: #667eea;
+  }
+  
+  /* Hide default arrow for select */
+  .input-wrapper .styled-select::-ms-expand {
+    display: none;
+  }
+  .input-wrapper .styled-select {
+    background-image: none;
+  }
+  
+  .toggle-password {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .toggle-password svg {
+    width: 20px;
+    height: 20px;
+    color: #a0aec0;
+    transition: color 0.2s;
+  }
+  
+  .toggle-password:hover svg {
+    color: #667eea;
+    stroke: #667eea;
   }
   </style>

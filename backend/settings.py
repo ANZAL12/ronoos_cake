@@ -122,7 +122,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cake',
+        'NAME': 'cakes',
         'USER': 'postgres',
         'PASSWORD': '6571370',
         'HOST': 'localhost',
