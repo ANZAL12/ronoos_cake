@@ -148,6 +148,57 @@
               </div>
             </div>
           </div>
+          <!-- Orders Content -->
+          <div v-else-if="activeTab === 'orders'" key="orders">
+            <div class="orders-header">
+              <button class="action-btn primary" @click="showOrderModal = true">
+                <i data-lucide="plus"></i>
+                Add Order
+              </button>
+            </div>
+            <div v-if="orders.length" class="orders-list">
+              <div class="orders-table-header">
+                <div class="orders-col customer">Customer</div>
+                <div class="orders-col cake">Cake</div>
+                <div class="orders-col price">Price</div>
+                <div class="orders-col notes">Notes</div>
+              </div>
+              <div class="order-item" v-for="(order, idx) in orders" :key="idx">
+                <div class="orders-col customer order-customer">{{ order.customer }}</div>
+                <div class="orders-col cake order-cake">{{ order.cake }}</div>
+                <div class="orders-col price order-price">${{ order.price }}</div>
+                <div class="orders-col notes order-notes">{{ order.notes }}</div>
+              </div>
+            </div>
+            <!-- Modal -->
+            <div v-if="showOrderModal" class="modal-overlay" @click.self="showOrderModal = false">
+              <div class="modal">
+                <h2>Add Order</h2>
+                <form @submit.prevent="addOrder">
+                  <div class="form-group">
+                    <label>Customer Name</label>
+                    <input v-model="orderForm.customer" type="text" required />
+                  </div>
+                  <div class="form-group">
+                    <label>Cake Name</label>
+                    <input v-model="orderForm.cake" type="text" required />
+                  </div>
+                  <div class="form-group">
+                    <label>Price</label>
+                    <input v-model.number="orderForm.price" type="number" min="0" required />
+                  </div>
+                  <div class="form-group">
+                    <label>Notes</label>
+                    <textarea v-model="orderForm.notes" rows="2" placeholder="Optional"></textarea>
+                  </div>
+                  <div class="modal-actions">
+                    <button type="button" class="action-btn secondary" @click="showOrderModal = false">Cancel</button>
+                    <button type="submit" class="action-btn primary">Add</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
           <!-- Other Content -->
           <div v-else key="other" class="coming-soon">
             <div class="coming-soon-icon">
@@ -183,6 +234,10 @@ const recentActivity = ref([
   { id: 5, icon: 'truck', title: 'Order Delivered', description: 'Vanilla Cake delivered successfully', time: '3 hours ago' }
 ])
 
+const showOrderModal = ref(false)
+const orderForm = ref({ customer: '', cake: '', price: '', notes: '' })
+const orders = ref([])
+
 function setActiveTab(tab) {
   activeTab.value = tab
   nextTick(() => {
@@ -200,6 +255,12 @@ function getTabTitle(tab) {
     'profile': 'Baker Profile'
   }
   return titles[tab] || 'Dashboard'
+}
+
+function addOrder() {
+  orders.value.push({ ...orderForm.value })
+  orderForm.value = { customer: '', cake: '', price: '', notes: '' }
+  showOrderModal.value = false
 }
 
 onMounted(() => {
@@ -689,5 +750,114 @@ body {
 }
 .sidebar::-webkit-scrollbar-thumb:hover, .main-content::-webkit-scrollbar-thumb:hover {
   background: #666;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.orders-table-header {
+  display: flex;
+  background: #18181b;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #24242e;
+  border-bottom: none;
+  color: #b0b0b8;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 12px 0 12px 0;
+  margin-bottom: 0;
+}
+.orders-col {
+  flex: 1 1 0;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  word-break: break-word;
+}
+.orders-col.customer { min-width: 120px; max-width: 200px; }
+.orders-col.cake { min-width: 120px; max-width: 200px; }
+.orders-col.price { min-width: 80px; max-width: 120px; justify-content: flex-start; }
+.orders-col.notes { min-width: 120px; max-width:auto; }
+.order-item {
+  display: flex;
+  background: #23232b;
+  border-left: 1px solid #24242e;
+  border-right: 1px solid #24242e;
+  border-bottom: 1px solid #24242e;
+  border-radius: 0;
+  color: #fff;
+  padding: 14px 0;
+  gap: 0;
+}
+.order-item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(24,24,27,0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: #18181b;
+  border-radius: 18px;
+  padding: 32px 28px 24px 28px;
+  min-width: 320px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  border: 1px solid #23232b;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.modal h2 {
+  margin-bottom: 12px;
+  font-size: 1.3rem;
+  color: #ff6b35;
+  font-weight: 700;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.form-group label {
+  font-size: 0.98rem;
+  color: #f7931e;
+  font-weight: 600;
+}
+.form-group input,
+.form-group textarea {
+  background: #23232b;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border: 1.5px solid #ff6b35;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
 }
 </style> 
