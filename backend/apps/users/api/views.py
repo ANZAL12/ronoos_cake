@@ -23,11 +23,7 @@ class UserListCreateAPIView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            # Hash the password before saving
-            password = serializer.validated_data.pop('password')
-            user = serializer.save()
-            user.set_password(password)
-            user.save()
+            user = serializer.save()  # Don't pop password, let serializer handle it
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

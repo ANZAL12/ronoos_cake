@@ -5,7 +5,7 @@ from backend.apps.users.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_baker', 'is_customer', 'is_staff', 'password']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_baker', 'is_customer', 'is_staff', 'password', 'mobile_number']
         # extra_kwargs = {
         #     'password': {'write_only': True}
         # }
@@ -19,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
             is_baker=validated_data.get('is_baker', False),
             is_customer=validated_data.get('is_customer', False),
-            is_staff=validated_data.get('is_staff', False)
+            is_staff=validated_data.get('is_staff', False),
+            mobile_number=validated_data.get('mobile_number', '')
         )
         return user

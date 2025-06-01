@@ -7,6 +7,7 @@ class User(AbstractUser):
     is_customer = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_baker = models.BooleanField(default=False)  # New field for bakers
+    mobile_number = models.CharField(max_length=20, blank=True, null=True, help_text="Customer mobile number")  # Customer mobile number
     
     groups = models.ManyToManyField(
         'auth.Group',
