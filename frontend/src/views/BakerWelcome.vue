@@ -70,7 +70,7 @@
     <div class="main-content">
       <div class="top-bar">
         <div class="welcome">
-          <h1>Good morning, {{ bakerName }}! ☀️</h1>
+          <h1>Hi, {{ bakerName }}! ☀️</h1>
           <p>Let's bake some magic today</p>
         </div>
         <div class="user-info">
@@ -216,7 +216,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 
-const bakerName = ref('Sarah Chen')
+const bakerName = ref('Anzal')
 const bakerInitials = computed(() => bakerName.value.split(' ').map(n => n[0]).join(''))
 
 const activeTab = ref('dashboard')
