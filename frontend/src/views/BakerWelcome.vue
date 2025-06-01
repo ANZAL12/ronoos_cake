@@ -4,7 +4,7 @@
     <div class="sidebar">
       <div class="logo">
         <div class="logo-icon">
-          <i data-lucide="cake" style="color: white; width: 24px; height: 24px;"></i>
+          <img :src="logoUrl" alt="Logo" style="width: 32px; height: 32px;" />
         </div>
         <div class="logo-text">Ronoos Cake</div>
       </div>
@@ -199,6 +199,20 @@
               </div>
             </div>
           </div>
+          <!-- Profile Content -->
+          <div v-else-if="activeTab === 'profile'" key="profile">
+            <div class="content">
+              <h2 class="section-title">Baker Profile</h2>
+              <div class="profile-details">
+                <img :src="logoUrl" alt="Logo" style="width: 64px; height: 64px; border-radius: 12px; margin-bottom: 16px;" />
+                <p><strong>Name:</strong> {{ bakerName }}</p>
+                <p><strong>Email:</strong> baker@example.com</p>
+                <p><strong>Role:</strong> Master Baker</p>
+                <input type="file" @change="onLogoChange" accept="image/*" />
+                <button class="action-btn">Edit Profile</button>
+              </div>
+            </div>
+          </div>
           <!-- Other Content -->
           <div v-else key="other" class="coming-soon">
             <div class="coming-soon-icon">
@@ -237,6 +251,7 @@ const recentActivity = ref([
 const showOrderModal = ref(false)
 const orderForm = ref({ customer: '', cake: '', price: '', notes: '' })
 const orders = ref([])
+const logoUrl = ref('/default-logo.png')
 
 function setActiveTab(tab) {
   activeTab.value = tab
@@ -261,6 +276,17 @@ function addOrder() {
   orders.value.push({ ...orderForm.value })
   orderForm.value = { customer: '', cake: '', price: '', notes: '' }
   showOrderModal.value = false
+}
+
+function onLogoChange(event) {
+  const file = event.target.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = e => {
+      logoUrl.value = e.target.result // This sets the logo to the uploaded image (base64)
+    }
+    reader.readAsDataURL(file)
+  }
 }
 
 onMounted(() => {
@@ -859,5 +885,17 @@ body {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 10px;
+}
+.profile-details {
+  margin-top: 30px;
+  background: #24242e;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 24px rgba(255, 107, 53, 0.08);
+  color: #fff;
+  font-size: 1.1rem;
+}
+.profile-details p {
+  margin-bottom: 14px;
 }
 </style> 
