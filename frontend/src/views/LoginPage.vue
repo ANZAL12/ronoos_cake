@@ -79,10 +79,10 @@
                 <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <select v-model="role" id="role" required class="styled-select">
-                <option value="baker">Baker</option>
-                <option value="customer">Customer</option>
+              <option value="baker">Baker</option>
+              <option value="customer">Customer</option>
                 <option value="staff">Admin</option>
-              </select>
+            </select>
             </div>
           </div>
   
