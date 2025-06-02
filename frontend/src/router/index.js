@@ -4,6 +4,7 @@ import HomePage from '@/views/HomePage.vue';
 import AdminWelcome from '@/views/AdminWelcome.vue';
 import BakerWelcome from '@/views/BakerWelcome.vue';
 import RegisterCustomer from '@/views/RegisterCustomer.vue';
+import CakesView from '@/views/CakesView.vue';
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: '/baker-welcome',
     name: 'BakerWelcome',
     component: BakerWelcome,
+  },
+  {
+    path: '/cakes',
+    name: 'Cakes',
+    component: CakesView,
   },
   {
     path: '/',

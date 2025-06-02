@@ -81,15 +81,21 @@ class CakeListCreateAPIView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
+        user = request.user
+        # Only allow admin or baker to create cakes
+        if not (getattr(user, 'is_baker', False) or getattr(user, 'is_admin', False) or getattr(user, 'is_staff', False)):
+            return Response(
+                {"detail": "Only admin or baker can create cakes."},
+                status=status.HTTP_403_FORBIDDEN
+            )
         serializer = CakeSerializer(data=request.data)
         if serializer.is_valid():
-            # Ensure we're using the authenticated user
-            if not request.user.is_authenticated:
+            if not user.is_authenticated:
                 return Response(
                     {"detail": "Authentication credentials were not provided."},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
-            serializer.save(baker=request.user)
+            serializer.save(baker=user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -134,8 +140,9 @@ class CakeDetailAPIView(APIView):
         if not cake:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        # Only allow the baker to delete their own cake
-        if cake.baker != request.user:
+        user = request.user
+        # Allow admin or baker to delete any cake
+        if not (getattr(user, 'is_baker', False) or getattr(user, 'is_admin', False) or getattr(user, 'is_staff', False)):
             return Response(
                 {"detail": "You don't have permission to delete this cake."},
                 status=status.HTTP_403_FORBIDDEN

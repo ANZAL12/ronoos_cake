@@ -142,8 +142,8 @@
         username: username.value,
         password: password.value,
       })
-      // localStorage.setItem('access', data.access)
-      // localStorage.setItem('refresh', data.refresh)
+      localStorage.setItem('access_token', data.access)
+      localStorage.setItem('refresh_token', data.refresh)
       if (data.user.is_staff) {
         router.push('/admin-welcome')
       } else if (data.user.is_baker) {

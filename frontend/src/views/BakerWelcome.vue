@@ -23,9 +23,9 @@
           </a>
         </div>
         <div class="nav-item">
-          <a class="nav-link" :class="{ active: activeTab === 'my-cakes' }" @click="setActiveTab('my-cakes')">
-            <i data-lucide="cake" style="width: 20px; height: 20px;"></i>
-            My Cakes
+          <a class="nav-link" :class="{ active: activeTab === 'view-cakes' }" @click="setActiveTab('view-cakes')">
+            <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
+            View Cakes
           </a>
         </div>
       </div>
@@ -213,6 +213,14 @@
               </div>
             </div>
           </div>
+          <!-- Add Cake Tab -->
+          <div v-else-if="activeTab === 'add-cake'" key="add-cake">
+            <CakesView :token="token" />
+          </div>
+          <!-- View Cakes Tab -->
+          <div v-else-if="activeTab === 'view-cakes'" key="view-cakes">
+            <ViewCake :token="token" />
+          </div>
           <!-- Other Content -->
           <div v-else key="other" class="coming-soon">
             <div class="coming-soon-icon">
@@ -229,6 +237,8 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import CakesView from './CakesView.vue'
+import ViewCake from './ViewCake.vue'
 
 const bakerName = ref('Anzal')
 const bakerInitials = computed(() => bakerName.value.split(' ').map(n => n[0]).join(''))
@@ -252,6 +262,7 @@ const showOrderModal = ref(false)
 const orderForm = ref({ customer: '', cake: '', price: '', notes: '' })
 const orders = ref([])
 const logoUrl = ref('/default-logo.png')
+const token = ref(localStorage.getItem('access_token') || "")
 
 function setActiveTab(tab) {
   activeTab.value = tab
@@ -267,7 +278,8 @@ function getTabTitle(tab) {
     'reviews': 'Customer Reviews',
     'payments': 'Payment History',
     'analytics': 'Analytics & Reports',
-    'profile': 'Baker Profile'
+    'profile': 'Baker Profile',
+    'view-cakes': 'View Cakes'
   }
   return titles[tab] || 'Dashboard'
 }

@@ -1,0 +1,105 @@
+{
+  "info": {
+    "name": "Cake API CRUD",
+    "_postman_id": "c1a2b3c4-d5e6-7890-abcd-ef1234567890",
+    "description": "Test CRUD operations for Cake API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Cake",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Chocolate Cake\",\n  \"description\": \"Rich chocolate cake\",\n  \"price\": 20.00\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/cakes/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "cakes", ""]
+        }
+      }
+    },
+    {
+      "name": "List Cakes",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/cakes/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "cakes", ""]
+        }
+      }
+    },
+    {
+      "name": "Retrieve Cake",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/cakes/1/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "cakes", "1", ""]
+        }
+      }
+    },
+    {
+      "name": "Update Cake",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Cake Name\",\n  \"description\": \"Updated description\",\n  \"price\": 25.00\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8000/api/cakes/1/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "cakes", "1", ""]
+        }
+      }
+    },
+    {
+      "name": "Delete Cake",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/cakes/1/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "cakes", "1", ""]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "access_token",
+      "value": ""
+    }
+  ]
+} 
