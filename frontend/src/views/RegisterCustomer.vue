@@ -49,7 +49,9 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const username = ref('')
 const email = ref('')
 const first_name = ref('')
@@ -81,6 +83,9 @@ const register = async () => {
     last_name.value = ''
     password.value = ''
     mobile_number.value = ''
+    setTimeout(() => {
+      router.push('/login')
+    }, 1200)
   } catch (err) {
     const data = err.response?.data
     if (data?.email && data.email[0].toLowerCase().includes('exist')) {

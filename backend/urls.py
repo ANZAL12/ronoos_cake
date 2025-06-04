@@ -33,6 +33,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('backend.apps.cakes.api.urls')),
     path('api/v1/', include('backend.apps.users.api.urls')),
+    path('api/v1/cart/', include('backend.apps.cart.api.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('home/', home, name='home'),

@@ -48,4 +48,18 @@ const router = createRouter({
   routes,
 });
 
+// Store last route after each navigation
+router.afterEach((to) => {
+  if (to.path !== '/login' && to.path !== '/register') {
+    localStorage.setItem('lastRoute', to.fullPath);
+  }
+});
+
+// Restore last route on app load if authenticated
+const token = localStorage.getItem('access_token');
+const lastRoute = localStorage.getItem('lastRoute');
+if (token && lastRoute && window.location.pathname === '/' && lastRoute !== '/login' && lastRoute !== '/register') {
+  window.location.replace(lastRoute);
+}
+
 export default router;

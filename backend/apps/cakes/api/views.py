@@ -72,8 +72,13 @@ class LoginView(APIView):
 
 class CakeListCreateAPIView(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes will be set dynamically
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request):
         cakes = Cake.objects.all()
@@ -141,8 +146,8 @@ class CakeDetailAPIView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
         user = request.user
-        # Allow admin or baker to delete any cake
-        if not (getattr(user, 'is_baker', False) or getattr(user, 'is_admin', False) or getattr(user, 'is_staff', False)):
+        # Allow only admin or baker to delete any cake
+        if not (getattr(user, 'is_baker', False) or getattr(user, 'is_admin', False)):
             return Response(
                 {"detail": "You don't have permission to delete this cake."},
                 status=status.HTTP_403_FORBIDDEN
@@ -159,3 +164,15 @@ class BakerCakeListAPIView(APIView):
         cakes = Cake.objects.filter(baker=request.user)
         serializer = CakeSerializer(cakes, many=True)
         return Response(serializer.data)
+
+class ActiveCakeListAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        cakes = Cake.objects.filter(is_available=True)
+        serializer = CakeSerializer(cakes, many=True)
+        return Response({
+            'count': cakes.count(),
+            'cakes': serializer.data
+        })

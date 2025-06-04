@@ -1,8 +1,7 @@
 from django.urls import path
-from .views import UserListCreateAPIView, UserDetailAPIView, LoginView
+from .views import CartView, CartItemView
 
 urlpatterns = [
-    path('', UserListCreateAPIView.as_view(), name='user-list-create'),
-    path('<int:pk>/', UserDetailAPIView.as_view(), name='user-detail'),
-    path('login/', LoginView.as_view(), name='user-login'),
+    path('', CartView.as_view(), name='cart'),
+    path('item/<int:item_id>/', CartItemView.as_view(), name='cart-item'),
 ]

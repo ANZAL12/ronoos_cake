@@ -5,7 +5,9 @@ from backend.apps.users.models import User
 from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from backend.apps.cart.models import Cart, CartItem
+from .serializers import CartSerializer, CartItemSerializer
 
 class UserListCreateAPIView(APIView):
     def get(self, request):
@@ -63,3 +65,48 @@ class LoginView(APIView):
                 'is_staff': user.is_staff
             }
         })
+
+class CartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        cart, _ = Cart.objects.get_or_create(customer=request.user)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+
+    def post(self, request):
+        cart, _ = Cart.objects.get_or_create(customer=request.user)
+        serializer = CartItemSerializer(data=request.data)
+        if serializer.is_valid():
+            cake = serializer.validated_data['cake']
+            quantity = serializer.validated_data['quantity']
+            item, created = CartItem.objects.get_or_create(cart=cart, cake=cake)
+            if not created:
+                item.quantity += quantity
+            else:
+                item.quantity = quantity
+            item.save()
+            return Response(CartSerializer(cart).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CartItemView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, item_id):
+        try:
+            item = CartItem.objects.get(id=item_id, cart__customer=request.user)
+        except CartItem.DoesNotExist:
+            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CartItemSerializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, item_id):
+        try:
+            item = CartItem.objects.get(id=item_id, cart__customer=request.user)
+        except CartItem.DoesNotExist:
+            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        item.delete()
+        return Response({'detail': 'Deleted'}, status=status.HTTP_204_NO_CONTENT)

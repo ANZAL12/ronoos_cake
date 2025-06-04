@@ -237,15 +237,19 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import CakesView from './CakesView.vue'
 import ViewCake from './ViewCake.vue'
+
+const route = useRoute()
+const router = useRouter()
 
 const bakerName = ref('Anzal')
 const bakerInitials = computed(() => bakerName.value.split(' ').map(n => n[0]).join(''))
 
-const activeTab = ref('dashboard')
+const activeTab = ref(route.query.tab || 'dashboard')
 const stats = ref({
-  totalCakes: 47,
+  totalCakes: 0,
   totalOrders: 156,
   totalRevenue: 3248,
   averageRating: 4.8
@@ -264,12 +268,33 @@ const orders = ref([])
 const logoUrl = ref('/default-logo.png')
 const token = ref(localStorage.getItem('access_token') || "")
 
+async function fetchActiveCakesCount() {
+  try {
+    const res = await fetch('/api/v1/cakes/active/', {
+      headers: { Authorization: `Bearer ${token.value}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      stats.value.totalCakes = data.count;
+    }
+  } catch (e) { /* handle error if needed */ }
+}
+
 function setActiveTab(tab) {
   activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+  if (tab === 'dashboard') fetchActiveCakesCount();
   nextTick(() => {
     if (window.lucide) window.lucide.createIcons()
   })
 }
+
+// Watch for route changes (e.g., browser back/forward)
+import { watch } from 'vue'
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) activeTab.value = newTab
+})
+
 function getTabTitle(tab) {
   const titles = {
     'add-cake': 'Add New Cake',
@@ -302,6 +327,7 @@ function onLogoChange(event) {
 }
 
 onMounted(() => {
+  fetchActiveCakesCount();
   if (window.lucide) window.lucide.createIcons()
 })
 </script>
