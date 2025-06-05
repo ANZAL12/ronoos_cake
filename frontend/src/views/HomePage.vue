@@ -156,6 +156,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+:deep(body) {
+  overflow-x: hidden;
+}
+.home-header,
+.cake-grid,
+.cake-search-outer,
+.cake-search-wrapper {
+  max-width: 100vw;
+  box-sizing: border-box;
+}
 .navbar {
   background: #f37022;
   padding: 0.5rem 0;
