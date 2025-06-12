@@ -33,11 +33,30 @@ const message = ref('')
 const success = ref(false)
 
 function submitForm() {
-  name.value = ''
-  email.value = ''
-  message.value = ''
-  success.value = true
-  setTimeout(() => { success.value = false }, 2500)
+  fetch('http://localhost:8000/api/v1/message/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: name.value,
+      email: email.value,
+      message: message.value
+    })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to send message');
+      return res.json();
+    })
+    .then(() => {
+      name.value = '';
+      email.value = '';
+      message.value = '';
+      success.value = true;
+      setTimeout(() => { success.value = false }, 2500);
+    })
+    .catch(() => {
+      success.value = false;
+      alert('Failed to send message. Please try again.');
+    });
 }
 </script>
 

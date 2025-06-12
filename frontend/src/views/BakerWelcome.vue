@@ -4,7 +4,7 @@
     <div class="sidebar">
       <div class="logo">
         <div class="logo-icon">
-          <img :src="logoUrl" alt="Logo" style="width: 32px; height: 32px;" />
+          <!-- Logo icon removed -->
         </div>
         <div class="logo-text">Ronoos Cake</div>
       </div>
@@ -64,6 +64,12 @@
             Profile
           </a>
         </div>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link" :class="{ active: activeTab === 'messages' }" @click="setActiveTab('messages')">
+          <i data-lucide="mail" style="width: 20px; height: 20px;"></i>
+          Messages
+        </a>
       </div>
     </div>
     <!-- Main Content -->
@@ -127,6 +133,13 @@
                 </div>
                 <div class="metric-value">{{ stats.averageRating }}</div>
                 <div class="metric-label">Average Rating</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon">
+                  <i data-lucide="mail" style="color: white; width: 24px; height: 24px;"></i>
+                </div>
+                <div class="metric-value">{{ stats.totalMessages }}</div>
+                <div class="metric-label">Messages</div>
               </div>
             </div>
             <div class="recent-activity">
@@ -204,11 +217,11 @@
             <div class="content">
               <h2 class="section-title">Baker Profile</h2>
               <div class="profile-details">
-                <img :src="logoUrl" alt="Logo" style="width: 64px; height: 64px; border-radius: 12px; margin-bottom: 16px;" />
+                <!-- Profile logo removed -->
                 <p><strong>Name:</strong> {{ bakerName }}</p>
                 <p><strong>Email:</strong> baker@example.com</p>
                 <p><strong>Role:</strong> Master Baker</p>
-                <input type="file" @change="onLogoChange" accept="image/*" />
+                <!-- Logo upload removed -->
                 <button class="action-btn">Edit Profile</button>
               </div>
             </div>
@@ -220,6 +233,21 @@
           <!-- View Cakes Tab -->
           <div v-else-if="activeTab === 'view-cakes'" key="view-cakes">
             <ViewCake :token="token" />
+          </div>
+          <!-- Messages Content -->
+          <div v-else-if="activeTab === 'messages'" key="messages">
+            <div class="messages-section">
+              <h2>Customer Messages</h2>
+              <div v-if="messages.length === 0" class="no-messages">No messages yet.</div>
+              <div v-for="msg in messages" :key="msg.id" class="message-card">
+                <div class="message-header">
+                  <span class="message-name">{{ msg.name }}</span>
+                  <span class="message-email">{{ msg.email }}</span>
+                  <span class="message-date">{{ new Date(msg.created_at).toLocaleString() }}</span>
+                </div>
+                <div class="message-body">{{ msg.message }}</div>
+              </div>
+            </div>
           </div>
           <!-- Other Content -->
           <div v-else key="other" class="coming-soon">
@@ -236,7 +264,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CakesView from './CakesView.vue'
 import ViewCake from './ViewCake.vue'
@@ -252,21 +280,18 @@ const stats = ref({
   totalCakes: 0,
   totalOrders: 156,
   totalRevenue: 3248,
-  averageRating: 4.8
+  averageRating: 4.8,
+  totalMessages: 0
 })
-const recentActivity = ref([
-  { id: 1, icon: 'shopping-cart', title: 'New Order Received', description: 'Chocolate Birthday Cake - John Doe', time: '2 mins ago' },
-  { id: 2, icon: 'star', title: 'New Review', description: '⭐⭐⭐⭐⭐ "Amazing red velvet cake!"', time: '15 mins ago' },
-  { id: 3, icon: 'plus-circle', title: 'Cake Added', description: 'Strawberry Cheesecake added to menu', time: '1 hour ago' },
-  { id: 4, icon: 'credit-card', title: 'Payment Received', description: '$85 for Wedding Cake order', time: '2 hours ago' },
-  { id: 5, icon: 'truck', title: 'Order Delivered', description: 'Vanilla Cake delivered successfully', time: '3 hours ago' }
-])
+const recentActivity = ref([])
 
 const showOrderModal = ref(false)
 const orderForm = ref({ customer: '', cake: '', price: '', notes: '' })
 const orders = ref([])
-const logoUrl = ref('/default-logo.png')
 const token = ref(localStorage.getItem('access_token') || "")
+const messages = ref([])
+const messagesLoaded = ref(false)
+let messageInterval = null
 
 async function fetchActiveCakesCount() {
   try {
@@ -280,10 +305,73 @@ async function fetchActiveCakesCount() {
   } catch (e) { /* handle error if needed */ }
 }
 
+function fetchMessages(force = false) {
+  if (messagesLoaded.value && !force) return;
+  const token = localStorage.getItem('access_token')
+  fetch('http://localhost:8000/api/v1/message/list/', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Fetched messages:', data)
+      if (Array.isArray(data)) {
+        messages.value = data
+      } else if (data && Array.isArray(data.messages)) {
+        messages.value = data.messages
+      } else {
+        messages.value = []
+      }
+      messagesLoaded.value = true
+      stats.value.totalMessages = messages.value.length
+      if (messages.value.length > 0) {
+        const messageActivities = messages.value.slice(0, 5).map(msg => ({
+          id: 'msg-' + msg.id,
+          icon: 'mail',
+          title: 'New Message',
+          description: `From ${msg.name}: "${msg.message.substring(0, 40)}${msg.message.length > 40 ? '...' : ''}"`,
+          time: new Date(msg.created_at).toLocaleString()
+        }))
+        recentActivity.value = [
+          ...messageActivities,
+          ...recentActivity.value.filter(act => !String(act.id).startsWith('msg-'))
+        ].slice(0, 10)
+      }
+    })
+    .catch((err) => {
+      console.error('Error fetching messages:', err)
+      messages.value = []
+      messagesLoaded.value = false
+    })
+}
+
+function fetchRecentActivity() {
+  const token = localStorage.getItem('access_token')
+  fetch('http://localhost:8000/api/v1/dashboard/recent-activity/', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => { recentActivity.value = data })
+    .catch(() => { recentActivity.value = [] })
+}
+
 function setActiveTab(tab) {
   activeTab.value = tab
   router.replace({ query: { ...route.query, tab } })
-  if (tab === 'dashboard') fetchActiveCakesCount();
+  if (tab === 'dashboard') {
+    fetchActiveCakesCount();
+    fetchRecentActivity();
+  }
+  if (tab === 'messages') {
+    fetchMessages(true)
+    if (!messageInterval) {
+      messageInterval = setInterval(() => fetchMessages(true), 30000)
+    }
+  } else {
+    if (messageInterval) {
+      clearInterval(messageInterval)
+      messageInterval = null
+    }
+  }
   nextTick(() => {
     if (window.lucide) window.lucide.createIcons()
   })
@@ -315,20 +403,18 @@ function addOrder() {
   showOrderModal.value = false
 }
 
-function onLogoChange(event) {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = e => {
-      logoUrl.value = e.target.result // This sets the logo to the uploaded image (base64)
-    }
-    reader.readAsDataURL(file)
-  }
-}
-
 onMounted(() => {
   fetchActiveCakesCount();
+  fetchMessages(true)
+  fetchRecentActivity();
   if (window.lucide) window.lucide.createIcons()
+})
+
+onUnmounted(() => {
+  if (messageInterval) {
+    clearInterval(messageInterval)
+    messageInterval = null
+  }
 })
 </script>
 
@@ -935,5 +1021,49 @@ body {
 }
 .profile-details p {
   margin-bottom: 14px;
+}
+.messages-section {
+  background: #fff7f0;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 2px 8px rgba(243,112,34,0.07);
+}
+.message-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 1.5rem;
+  padding: 1.2rem 1.5rem;
+}
+.message-header {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1.05rem;
+  margin-bottom: 0.7rem;
+  color: #ff6b35;
+  font-weight: 600;
+}
+.message-name {
+  flex: 1;
+}
+.message-email {
+  color: #23232b;
+  font-size: 0.98rem;
+}
+.message-date {
+  color: #b0b0b0;
+  font-size: 0.95rem;
+}
+.message-body {
+  color: #23232b;
+  font-size: 1.08rem;
+  margin-top: 0.5rem;
+}
+.no-messages {
+  color: #b0b0b0;
+  text-align: center;
+  margin: 2rem 0;
+  font-size: 1.1rem;
 }
 </style> 
