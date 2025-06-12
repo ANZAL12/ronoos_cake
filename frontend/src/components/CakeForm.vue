@@ -13,6 +13,10 @@
       <input v-model="form.price" type="number" step="0.01" required />
     </div>
     <div>
+      <label>Offer Price:</label>
+      <input v-model="form.offer_price" type="number" step="0.01" placeholder="(optional)" />
+    </div>
+    <div>
       <label>Image:</label>
       <input @change="handleFileChange" type="file" accept="image/*" />
     </div>
@@ -46,6 +50,7 @@ export default {
         name: this.cake?.name || "",
         description: this.cake?.description || "",
         price: this.cake?.price || "",
+        offer_price: this.cake?.offer_price || "",
         image: null,
         is_available: this.cake?.is_available ?? true
       },
@@ -62,6 +67,7 @@ export default {
       formData.append("name", this.form.name);
       formData.append("description", this.form.description);
       formData.append("price", this.form.price);
+      if (this.form.offer_price) formData.append("offer_price", this.form.offer_price);
       if (this.form.image) formData.append("image", this.form.image);
       formData.append("is_available", this.form.is_available);
 

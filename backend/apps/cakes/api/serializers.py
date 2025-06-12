@@ -13,6 +13,6 @@ class CakeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Cake
-        fields = ['id', 'name', 'description', 'price', 'baker', 'image', 
+        fields = ['id', 'name', 'description', 'price', 'offer_price', 'baker', 'image', 
                  'is_available', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
