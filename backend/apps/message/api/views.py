@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions
-from message.models import Message
+from backend.apps.message.models import Message
 from .serializers import MessageSerializer
 
 class MessageCreateAPIView(generics.CreateAPIView):

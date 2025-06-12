@@ -24,7 +24,6 @@
         <p>Discover our handcrafted cakes, baked fresh for every occasion. Order online and enjoy doorstep delivery!</p>
         <button class="explore-btn" @click="scrollToCakes">Explore Cakes</button>
       </div>
-      <img src="/hero-cake.png" alt="Hero Cake" class="hero-img" />
     </section>
     <section class="search-section">
       <div class="search-bar">
@@ -91,17 +90,16 @@
         </div>
       </div>
     </template>
-    <div v-if="showCart" class="cart-modal-overlay" @click.self="showCart = false">
+    <div v-if="showCart" class="cart-modal-overlay">
       <div class="cart-modal-content">
-        <button class="close-btn" @click="showCart = false">&times;</button>
-        <CartView />
+        <CartView @close="showCart = false" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import AboutUs from './AboutUs.vue'
 import CartView from './CartView.vue'
 import ContactUs from './ContactUs.vue'
@@ -169,6 +167,14 @@ async function addToCart(cake) {
   showCakeModal.value = false
   showCart.value = true
 }
+
+watch(showCart, (val) => {
+  if (val) {
+    document.body.classList.add('modal-open');
+  } else {
+    document.body.classList.remove('modal-open');
+  }
+});
 
 onMounted(async () => {
   try {
@@ -572,5 +578,11 @@ onMounted(async () => {
 }
 .modal-offer-price {
   margin-bottom: 0.5em;
+}
+</style>
+
+<style>
+body.modal-open {
+  overflow: hidden !important;
 }
 </style> 

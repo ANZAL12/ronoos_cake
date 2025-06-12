@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'backend.apps.review',
     'backend.apps.delivery',
     'backend.apps.payment',
-    'message',
+    'backend.apps.message',
 ]
 
 MIDDLEWARE = [

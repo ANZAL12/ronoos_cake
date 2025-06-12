@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from backend.apps.order.models import Order
 from backend.apps.review.models import Review
 from backend.apps.payment.models import Payment
-from message.models import Message
+from backend.apps.message.models import Message
 from backend.apps.cakes.models import Cake
 
 class UserListCreateAPIView(APIView):

@@ -22,7 +22,8 @@ class CartItem(models.Model):
 
     @property
     def total_price(self):
-        return self.cake.price * self.quantity
+        price = self.cake.offer_price if self.cake.offer_price is not None else self.cake.price
+        return price * self.quantity
 
     def __str__(self):
         return f"{self.quantity} x {self.cake.name}"

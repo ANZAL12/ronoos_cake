@@ -26,7 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cake
-        fields = ['id', 'name', 'price', 'image', 'description']
+        fields = ['id', 'name', 'price', 'offer_price', 'image', 'description']
 
 class CartItemSerializer(serializers.ModelSerializer):
     cake = CakeSerializer(read_only=True)
