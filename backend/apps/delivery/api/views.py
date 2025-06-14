@@ -5,7 +5,10 @@ from backend.apps.users.models import User
 from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import viewsets
+from backend.apps.delivery.models import Delivery
+from .serializers import DeliverySerializer
 
 class UserListCreateAPIView(APIView):
     def get(self, request):
@@ -63,3 +66,25 @@ class LoginView(APIView):
                 'is_staff': user.is_staff
             }
         })
+
+class DeliveryViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DeliverySerializer
+
+    def get_queryset(self):
+        return Delivery.objects.filter(order__customer=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        # Check if delivery details already exist for this order
+        order_id = request.data.get('order')
+        if Delivery.objects.filter(order_id=order_id).exists():
+            return Response(
+                {'detail': 'Delivery details already exist for this order'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

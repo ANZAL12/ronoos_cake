@@ -5,6 +5,8 @@ import AdminWelcome from '@/views/AdminWelcome.vue';
 import BakerWelcome from '@/views/BakerWelcome.vue';
 import RegisterCustomer from '@/views/RegisterCustomer.vue';
 import CakesView from '@/views/CakesView.vue';
+import CheckoutView from '../views/CheckoutView.vue'
+import DeliveryDetailsView from '../views/DeliveryDetailsView.vue'
 
 const routes = [
   {
@@ -36,6 +38,18 @@ const routes = [
     path: '/cakes',
     name: 'Cakes',
     component: CakesView,
+  },
+  {
+    path: '/checkout',
+    name: 'checkout',
+    component: CheckoutView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/delivery-details/:orderId',
+    name: 'delivery-details',
+    component: DeliveryDetailsView,
+    meta: { requiresAuth: true }
   },
   {
     path: '/',

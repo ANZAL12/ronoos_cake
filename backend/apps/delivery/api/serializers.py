@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from backend.apps.users.models import User
+from backend.apps.delivery.models import Delivery
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,3 +21,10 @@ class UserSerializer(serializers.ModelSerializer):
             is_baker=validated_data.get('is_baker', False)
         )
         return user
+
+
+class DeliverySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Delivery
+        fields = ['id', 'order', 'customer_name', 'mobile_number', 'location', 'address', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']

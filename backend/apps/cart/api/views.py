@@ -106,7 +106,12 @@ class CartItemView(APIView):
     def delete(self, request, item_id):
         try:
             item = CartItem.objects.get(id=item_id, cart__customer=request.user)
+            item.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except CartItem.DoesNotExist:
-            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
-        item.delete()
-        return Response({'detail': 'Deleted'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'detail': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(
+                {'detail': f'Error deleting item: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

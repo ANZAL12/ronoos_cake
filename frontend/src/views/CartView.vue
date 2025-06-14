@@ -32,7 +32,7 @@
             <div class="cart-total">
               Total: Rs {{ Number(cart.total_price).toFixed(2) }}
             </div>
-            <button class="cart-checkout-btn">Proceed to Checkout</button>
+            <button class="cart-checkout-btn" @click="goToCheckout">Proceed to Checkout</button>
           </div>
         </div>
         <div v-else class="cart-empty">Your cart is empty.</div>
@@ -43,7 +43,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const cart = ref({ items: [] })
 const loading = ref(true)
 
@@ -88,6 +90,10 @@ async function removeItem(itemId) {
     headers: { Authorization: `Bearer ${token}` }
   })
   fetchCart()
+}
+
+function goToCheckout() {
+  router.push('/checkout')
 }
 
 onMounted(fetchCart)
