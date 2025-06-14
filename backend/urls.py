@@ -36,6 +36,8 @@ urlpatterns = [
     path('api/v1/cart/', include('backend.apps.cart.api.urls')),
     path('api/v1/dashboard/', include('backend.apps.dashboard.api.urls')),
     path('api/v1/message/', include('backend.apps.message.api.urls')),
+    path('api/v1/orders/', include('backend.apps.order.api.urls')),
+    path('api/v1/delivery/', include('backend.apps.delivery.api.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('home/', home, name='home'),

@@ -7,6 +7,9 @@ import RegisterCustomer from '@/views/RegisterCustomer.vue';
 import CakesView from '@/views/CakesView.vue';
 import CheckoutView from '../views/CheckoutView.vue'
 import DeliveryDetailsView from '../views/DeliveryDetailsView.vue'
+import OrderConfirmationView from '../views/OrderConfirmationView.vue'
+import OrderListView from '../views/OrderListView.vue'
+import OrderDetailView from '../views/OrderDetailView.vue'
 
 const routes = [
   {
@@ -49,6 +52,24 @@ const routes = [
     path: '/delivery-details/:orderId',
     name: 'delivery-details',
     component: DeliveryDetailsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/order-confirmation/:orderId',
+    name: 'order-confirmation',
+    component: OrderConfirmationView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/orders',
+    name: 'orders',
+    component: OrderListView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/orders/:orderId',
+    name: 'order-detail',
+    component: OrderDetailView,
     meta: { requiresAuth: true }
   },
   {

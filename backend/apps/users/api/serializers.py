@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from backend.apps.users.models import User
+import re
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,6 +10,13 @@ class UserSerializer(serializers.ModelSerializer):
         # extra_kwargs = {
         #     'password': {'write_only': True}
         # }
+
+    def validate_mobile_number(self, value):
+        if not value:
+            raise serializers.ValidationError('Mobile number is required.')
+        if not re.match(r'^\d{10,15}$', value):
+            raise serializers.ValidationError('Mobile number must be 10-15 digits.')
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(

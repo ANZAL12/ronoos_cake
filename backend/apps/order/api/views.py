@@ -6,6 +6,10 @@ from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from backend.apps.order.models import Order
+from .serializers import OrderSerializer
 
 class UserListCreateAPIView(APIView):
     def get(self, request):
@@ -63,3 +67,13 @@ class LoginView(APIView):
                 'is_staff': user.is_staff
             }
         })
+
+class OrderViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        return Order.objects.filter(customer=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(customer=self.request.user)

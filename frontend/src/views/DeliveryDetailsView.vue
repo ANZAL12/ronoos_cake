@@ -20,7 +20,7 @@
           id="mobileNumber" 
           v-model="deliveryDetails.mobile_number" 
           required
-          pattern="[0-9]{10}"
+          pattern="[0-9]{10,15}"
           class="form-input"
         >
       </div>
@@ -83,6 +83,27 @@ function getAuthToken() {
   return token
 }
 
+async function fetchUserDetails() {
+  const token = getAuthToken()
+  if (!token) return
+
+  try {
+    const response = await fetch('/api/v1/users/me/', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const userData = await response.json()
+      deliveryDetails.value.customer_name = `${userData.first_name} ${userData.last_name}`.trim() || userData.username
+      deliveryDetails.value.mobile_number = userData.mobile_number || ''
+    }
+  } catch (error) {
+    console.error('Error fetching user details:', error)
+  }
+}
+
 async function submitDeliveryDetails() {
   const token = getAuthToken()
   if (!token) return
@@ -122,6 +143,8 @@ async function submitDeliveryDetails() {
 function goBack() {
   router.back()
 }
+
+fetchUserDetails()
 </script>
 
 <style scoped>
@@ -199,21 +222,21 @@ function goBack() {
   color: white;
 }
 
-.btn-primary:hover {
-  background: #357abd;
-}
-
-.btn-primary:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
 .btn-secondary {
   background: #f5f5f5;
   color: #333;
 }
 
+.btn-primary:hover {
+  background: #357abd;
+}
+
 .btn-secondary:hover {
-  background: #e5e5e5;
+  background: #e0e0e0;
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style> 

@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import viewsets
 from backend.apps.delivery.models import Delivery
 from .serializers import DeliverySerializer
+from backend.apps.order.models import Order
 
 class UserListCreateAPIView(APIView):
     def get(self, request):
@@ -77,13 +78,40 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         # Check if delivery details already exist for this order
         order_id = request.data.get('order')
+        if not order_id:
+            return Response(
+                {'detail': 'Order ID is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify that the order exists and belongs to the user
+        try:
+            order = Order.objects.get(id=order_id, customer=request.user)
+        except Order.DoesNotExist:
+            return Response(
+                {'detail': f'Order with ID {order_id} does not exist or does not belong to you'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if Delivery.objects.filter(order_id=order_id).exists():
             return Response(
                 {'detail': 'Delivery details already exist for this order'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        serializer = self.get_serializer(data=request.data)
+        # Auto-populate customer details from user profile
+        data = request.data.copy()
+        user = request.user
+        
+        # Only set customer_name if not provided or empty
+        if not data.get('customer_name'):
+            data['customer_name'] = f"{user.first_name} {user.last_name}".strip() or user.username
+        
+        # Only set mobile_number if not provided or empty
+        if not data.get('mobile_number') and hasattr(user, 'profile'):
+            data['mobile_number'] = user.profile.mobile_number
+        
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
