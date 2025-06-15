@@ -28,6 +28,12 @@
             View Cakes
           </a>
         </div>
+        <div class="nav-item">
+          <a class="nav-link" :class="{ active: activeTab === 'all-orders' }" @click="setActiveTab('all-orders')">
+            <i data-lucide="list" style="width: 20px; height: 20px;"></i>
+            All Orders
+          </a>
+        </div>
       </div>
       <div class="nav-section">
         <div class="nav-title">Business</div>
@@ -171,44 +177,188 @@
             </div>
             <div v-if="orders.length" class="orders-list">
               <div class="orders-table-header">
+                <div class="orders-col customer">Order ID</div>
                 <div class="orders-col customer">Customer</div>
-                <div class="orders-col cake">Cake</div>
-                <div class="orders-col price">Price</div>
-                <div class="orders-col notes">Notes</div>
+                <div class="orders-col cake">Items</div>
+                <div class="orders-col price">Total Amount</div>
+                <div class="orders-col notes">Status</div>
               </div>
               <div class="order-item" v-for="(order, idx) in orders" :key="idx">
-                <div class="orders-col customer order-customer">{{ order.customer }}</div>
-                <div class="orders-col cake order-cake">{{ order.cake }}</div>
-                <div class="orders-col price order-price">${{ order.price }}</div>
-                <div class="orders-col notes order-notes">{{ order.notes }}</div>
+                <div class="orders-col customer order-customer">#{{ order.id }}</div>
+                <div class="orders-col customer order-customer">
+                  <div class="customer-details">
+                    <div class="customer-name">
+                      {{ order.customer ? 
+                        (order.customer.first_name || '') + 
+                        (order.customer.last_name ? ' ' + order.customer.last_name : '') || 
+                        order.customer.username : 
+                        order.customer_name 
+                      }}
+                    </div>
+                    <div class="customer-contact">
+                      {{ order.customer ? order.customer.mobile_number : order.mobile_number }}
+                    </div>
+                    <div class="customer-location" v-if="order.location">
+                      {{ order.location }}
+                    </div>
+                  </div>
+                </div>
+                <div class="orders-col cake order-cake">
+                  <div v-for="item in order.items" :key="item.cake">
+                    Cake #{{ item.cake }} ({{ item.quantity }}x)
+                  </div>
+                </div>
+                <div class="orders-col price order-price">${{ order.total_amount }}</div>
+                <div class="orders-col notes order-notes">
+                  <span :class="['status-badge', order.status]">{{ order.status }}</span>
+                  <select v-model="order.newStatus" @change="updateOrderStatus(order)" style="margin-left: 10px;">
+                    <option disabled value="">Change status</option>
+                    <option v-for="status in ORDER_STATUSES" :key="status.value" :value="status.value">
+                      {{ status.label }}
+                    </option>
+                  </select>
+                </div>
+                <div class="orders-col">
+                  <button @click="viewCustomerDetails(order)">View</button>
+                </div>
               </div>
             </div>
             <!-- Modal -->
             <div v-if="showOrderModal" class="modal-overlay" @click.self="showOrderModal = false">
               <div class="modal">
-                <h2>Add Order</h2>
+                <h2>Add New Order</h2>
                 <form @submit.prevent="addOrder">
                   <div class="form-group">
-                    <label>Customer Name</label>
-                    <input v-model="orderForm.customer" type="text" required />
+                    <label>Customer Details</label>
+                    <div class="customer-form-grid">
+                      <div class="form-group">
+                        <label>Search Existing Customer (Optional)</label>
+                        <div class="search-container">
+                          <select v-model="orderForm.customer_id" class="customer-input" @change="onCustomerSelect">
+                            <option value="">Select a customer</option>
+                            <option v-for="customer in allCustomers" :key="customer.id" :value="customer.id">
+                              {{ customer.username }} ({{ customer.mobile_number }})
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>Customer Name</label>
+                        <input 
+                          v-model="orderForm.customer_name" 
+                          type="text" 
+                          placeholder="Enter customer name" 
+                          class="customer-input"
+                          :readonly="!!orderForm.customer_id"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input 
+                          v-model="orderForm.mobile_number" 
+                          type="tel" 
+                          placeholder="10-digit mobile number" 
+                          required 
+                          class="customer-input"
+                          :readonly="!!orderForm.customer_id"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label>Location</label>
+                        <div class="location-input-container">
+                          <input 
+                            v-model="orderForm.location" 
+                            type="text" 
+                            placeholder="Delivery Location" 
+                            required 
+                            class="customer-input"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div class="form-group">
-                    <label>Cake Name</label>
-                    <input v-model="orderForm.cake" type="text" required />
+                    <label>Order Items</label>
+                    <div v-for="(item, index) in orderForm.items" :key="index" class="order-item-form">
+                      <div class="item-row">
+                        <select v-model="item.cake" @change="updateItemPrice(index)" required class="cake-select">
+                          <option value="">Select a Cake</option>
+                          <option v-for="cake in availableCakes" :key="cake.id" :value="cake.id">
+                            {{ cake.name }} - ${{ cake.price }}
+                          </option>
+                        </select>
+                        <input 
+                          v-model.number="item.quantity" 
+                          type="number" 
+                          min="1" 
+                          placeholder="Qty" 
+                          required 
+                          @input="calculateTotal"
+                          class="quantity-input"
+                        />
+                        <input 
+                          v-model.number="item.price" 
+                          type="number" 
+                          step="0.01" 
+                          placeholder="Price" 
+                          required 
+                          @input="calculateTotal"
+                          class="price-input"
+                        />
+                        <button 
+                          type="button" 
+                          class="remove-item" 
+                          @click="orderForm.items.splice(index, 1); calculateTotal()" 
+                          v-if="orderForm.items.length > 1"
+                        >
+                          <i data-lucide="x"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <button type="button" class="add-item-btn" @click="orderForm.items.push({ cake: '', quantity: 1, price: '' })">
+                      <i data-lucide="plus"></i> Add Another Item
+                    </button>
                   </div>
                   <div class="form-group">
-                    <label>Price</label>
-                    <input v-model.number="orderForm.price" type="number" min="0" required />
+                    <label>Total Amount</label>
+                    <input 
+                      v-model.number="orderForm.total_amount" 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="Total Amount" 
+                      readonly 
+                      class="total-input"
+                    />
                   </div>
                   <div class="form-group">
-                    <label>Notes</label>
-                    <textarea v-model="orderForm.notes" rows="2" placeholder="Optional"></textarea>
+                    <label>Status</label>
+                    <select v-model="orderForm.status" class="status-select">
+                      <option value="pending">Pending</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
                   </div>
                   <div class="modal-actions">
                     <button type="button" class="action-btn secondary" @click="showOrderModal = false">Cancel</button>
-                    <button type="submit" class="action-btn primary">Add</button>
+                    <button type="submit" class="action-btn primary">Create Order</button>
                   </div>
                 </form>
+              </div>
+            </div>
+            <!-- Customer Details Modal -->
+            <div v-if="showCustomerModal" class="modal-overlay" @click.self="showCustomerModal = false">
+              <div class="modal">
+                <h2>Delivery Details</h2>
+                <template v-if="selectedOrder.delivery">
+                  <p><strong>Recipient Name:</strong> {{ selectedOrder.delivery.customer_name }}</p>
+                  <p><strong>Mobile:</strong> {{ selectedOrder.delivery.mobile_number }}</p>
+                  <p><strong>Location:</strong> {{ selectedOrder.delivery.location }}</p>
+                  <p><strong>Address:</strong> {{ selectedOrder.delivery.address }}</p>
+                </template>
+                <template v-else>
+                  <p>No delivery details available.</p>
+                </template>
+                <button @click="showCustomerModal = false">Close</button>
               </div>
             </div>
           </div>
@@ -249,6 +399,59 @@
               </div>
             </div>
           </div>
+          <!-- All Orders Content -->
+          <div v-else-if="activeTab === 'all-orders'" key="all-orders">
+            <div class="orders-header">
+              <h2>All Orders (Baker View)</h2>
+            </div>
+            <div v-if="allOrders.length" class="orders-list">
+              <div class="orders-table-header">
+                <div class="orders-col customer">Order ID</div>
+                <div class="orders-col customer">Customer</div>
+                <div class="orders-col cake">Items</div>
+                <div class="orders-col price">Total Amount</div>
+                <div class="orders-col notes">Status</div>
+                <div class="orders-col notes">Delivery</div>
+              </div>
+              <div class="order-item" v-for="order in allOrders" :key="order.id">
+                <div class="orders-col customer order-customer">#{{ order.id }}</div>
+                <div class="orders-col customer order-customer">
+                  <div class="customer-details">
+                    <div class="customer-name">
+                      {{ order.customer_name || (order.customer ? ((order.customer.first_name || '') + (order.customer.last_name ? ' ' + order.customer.last_name : '')) : '') || (order.customer ? order.customer.username : '') }}
+                    </div>
+                    <div class="customer-contact">
+                      {{ order.customer && order.customer.mobile_number ? order.customer.mobile_number : order.mobile_number }}
+                    </div>
+                    <div class="customer-location" v-if="order.location">
+                      {{ order.location }}
+                    </div>
+                  </div>
+                </div>
+                <div class="orders-col cake order-cake">
+                  <div v-for="item in order.items" :key="item.cake">
+                    Cake #{{ item.cake }} ({{ item.quantity }}x)
+                  </div>
+                </div>
+                <div class="orders-col price order-price">${{ order.total_amount }}</div>
+                <div class="orders-col notes order-notes">
+                  <span :class="['status-badge', order.status]">{{ order.status }}</span>
+                </div>
+                <div class="orders-col notes">
+                  <div v-if="order.delivery">
+                    <div><strong>Name:</strong> {{ order.delivery.customer_name }}</div>
+                    <div><strong>Mobile:</strong> {{ order.delivery.mobile_number }}</div>
+                    <div><strong>Location:</strong> {{ order.delivery.location }}</div>
+                    <div><strong>Address:</strong> {{ order.delivery.address }}</div>
+                  </div>
+                  <div v-else>
+                    <span>No delivery details</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-messages">No orders found.</div>
+          </div>
           <!-- Other Content -->
           <div v-else key="other" class="coming-soon">
             <div class="coming-soon-icon">
@@ -264,7 +467,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, computed, onMounted, nextTick, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CakesView from './CakesView.vue'
 import ViewCake from './ViewCake.vue'
@@ -286,12 +489,32 @@ const stats = ref({
 const recentActivity = ref([])
 
 const showOrderModal = ref(false)
-const orderForm = ref({ customer: '', cake: '', price: '', notes: '' })
+const orderForm = ref({
+  customer_id: '',
+  customer_name: '',
+  mobile_number: '',
+  items: [{ cake: '', quantity: 1, price: '' }],
+  total_amount: '',
+  status: 'pending',
+  location: ''
+})
 const orders = ref([])
 const token = ref(localStorage.getItem('access_token') || "")
 const messages = ref([])
 const messagesLoaded = ref(false)
+const availableCakes = ref([])
+const allCustomers = ref([])
+const ORDER_STATUSES = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' }
+]
+const showCustomerModal = ref(false)
+const selectedOrder = ref(null)
+const allOrders = ref([])
 let messageInterval = null
+let ordersInterval = null
 
 async function fetchActiveCakesCount() {
   try {
@@ -346,12 +569,118 @@ function fetchMessages(force = false) {
 
 function fetchRecentActivity() {
   const token = localStorage.getItem('access_token')
-  fetch('http://localhost:8000/api/v1/dashboard/recent-activity/', {
+  
+  fetch('http://localhost:8000/api/v1/orders/', {
     headers: { Authorization: `Bearer ${token}` }
   })
-    .then(res => res.json())
-    .then(data => { recentActivity.value = data })
-    .catch(() => { recentActivity.value = [] })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+      return res.json();
+    })
+    .then(orders => {
+      // Transform orders into activity items
+      const orderActivities = orders.slice(0, 5).map(order => ({
+        id: `order-${order.id}`,
+        icon: 'shopping-bag',
+        title: 'New Order',
+        description: `Order #${order.id} - ${order.items.length} item(s) - $${order.total_amount}`,
+        time: new Date(order.created_at).toLocaleString()
+      }));
+
+      // Add a welcome message if there are no orders
+      if (orderActivities.length === 0) {
+        orderActivities.push({
+          id: 'welcome',
+          icon: 'cake',
+          title: 'Welcome to Ronoos Cake',
+          description: 'Start managing your cake orders and business',
+          time: new Date().toLocaleString()
+        });
+      }
+
+      recentActivity.value = orderActivities;
+    })
+    .catch((error) => {
+      console.error('Error fetching recent activity:', error);
+      // Provide default activity data when API fails
+      recentActivity.value = [
+        {
+          id: 'default-1',
+          icon: 'cake',
+          title: 'Welcome to Ronoos Cake',
+          description: 'Start managing your cake orders and business',
+          time: new Date().toLocaleString()
+        },
+        {
+          id: 'default-2',
+          icon: 'shopping-bag',
+          title: 'Ready to Take Orders',
+          description: 'Your dashboard is set up and ready to go',
+          time: new Date().toLocaleString()
+        }
+      ];
+    });
+}
+
+async function fetchOrders() {
+  try {
+    console.log('Fetching orders...');
+    const response = await fetch('http://localhost:8000/api/v1/orders/', {
+      headers: { Authorization: `Bearer ${token.value}` }
+    });
+    console.log('Orders response status:', response.status);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Fetched orders:', data);
+      orders.value = data.map(order => ({
+        ...order,
+        newStatus: '',
+        // Ensure these fields are available for both types of orders
+        customer_name: order.customer_name || (order.customer ? order.customer.username : ''),
+        mobile_number: order.mobile_number || (order.customer ? order.customer.mobile_number : ''),
+        location: order.location || ''
+      }));
+      // Update stats with new order count
+      stats.value.totalOrders = data.length;
+      // Update total revenue
+      stats.value.totalRevenue = data.reduce((sum, order) => sum + parseFloat(order.total_amount), 0).toFixed(2);
+    } else {
+      console.error('Failed to fetch orders:', await response.text());
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+async function fetchAvailableCakes() {
+  try {
+    const response = await fetch('http://localhost:8000/api/v1/cakes/', {
+      headers: { Authorization: `Bearer ${token.value}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      availableCakes.value = data;
+    }
+  } catch (error) {
+    console.error('Error fetching cakes:', error);
+  }
+}
+
+function updateItemPrice(index) {
+  const item = orderForm.value.items[index];
+  const selectedCake = availableCakes.value.find(cake => cake.id === item.cake);
+  if (selectedCake) {
+    item.price = selectedCake.price;
+    calculateTotal();
+  }
+}
+
+function calculateTotal() {
+  orderForm.value.total_amount = orderForm.value.items.reduce((sum, item) => {
+    return sum + (parseFloat(item.price || 0) * item.quantity);
+  }, 0).toFixed(2);
 }
 
 function setActiveTab(tab) {
@@ -360,6 +689,20 @@ function setActiveTab(tab) {
   if (tab === 'dashboard') {
     fetchActiveCakesCount();
     fetchRecentActivity();
+  }
+  if (tab === 'orders') {
+    fetchOrders();
+    if (!ordersInterval) {
+      ordersInterval = setInterval(fetchOrders, 10000);
+    }
+  } else {
+    if (ordersInterval) {
+      clearInterval(ordersInterval);
+      ordersInterval = null;
+    }
+  }
+  if (tab === 'all-orders') {
+    fetchAllOrders();
   }
   if (tab === 'messages') {
     fetchMessages(true)
@@ -378,10 +721,17 @@ function setActiveTab(tab) {
 }
 
 // Watch for route changes (e.g., browser back/forward)
-import { watch } from 'vue'
 watch(() => route.query.tab, (newTab) => {
   if (newTab) activeTab.value = newTab
 })
+
+// Watch for modal opening
+watch(showOrderModal, (newValue) => {
+  if (newValue) {
+    fetchAllCustomers();
+    fetchAvailableCakes();
+  }
+});
 
 function getTabTitle(tab) {
   const titles = {
@@ -397,16 +747,172 @@ function getTabTitle(tab) {
   return titles[tab] || 'Dashboard'
 }
 
-function addOrder() {
-  orders.value.push({ ...orderForm.value })
-  orderForm.value = { customer: '', cake: '', price: '', notes: '' }
-  showOrderModal.value = false
+async function fetchAllCustomers() {
+  try {
+    const response = await fetch('http://localhost:8000/api/v1/customers/', {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (response.ok) {
+      allCustomers.value = await response.json();
+    } else {
+      allCustomers.value = [];
+    }
+  } catch (error) {
+    allCustomers.value = [];
+    console.error('Error fetching all customers:', error);
+  }
+}
+
+function onCustomerSelect() {
+  const selected = allCustomers.value.find(c => c.id === orderForm.value.customer_id);
+  if (selected) {
+    orderForm.value.customer_name = selected.username;
+    orderForm.value.mobile_number = selected.mobile_number;
+  } else {
+    orderForm.value.customer_name = '';
+    orderForm.value.mobile_number = '';
+  }
+}
+
+async function addOrder() {
+  try {
+    const orderData = {
+      items: orderForm.value.items.map(item => ({
+        cake: item.cake,
+        quantity: item.quantity
+      }))
+    };
+
+    // Add customer details if manually entered
+    if (!orderForm.value.customer_id) {
+      orderData.customer_name = orderForm.value.customer_name;
+      orderData.mobile_number = orderForm.value.mobile_number;
+      orderData.location = orderForm.value.location;
+    } else {
+      orderData.customer_id = orderForm.value.customer_id;
+    }
+
+    console.log('Sending order data:', orderData);
+
+    const response = await fetch('http://localhost:8000/api/v1/orders/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token.value}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    console.log('Response status:', response.status);
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
+
+    if (response.ok) {
+      const createdOrder = responseData;
+      // If user selected a different status, update it
+      if (orderForm.value.status && orderForm.value.status !== 'pending') {
+        await fetch(`http://localhost:8000/api/v1/orders/${createdOrder.id}/status/`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token.value}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: orderForm.value.status })
+        });
+      }
+      await fetchOrders();
+      orderForm.value = {
+        customer_id: '',
+        customer_name: '',
+        mobile_number: '',
+        items: [{ cake: '', quantity: 1, price: '' }],
+        total_amount: '',
+        status: 'pending',
+        location: ''
+      };
+      showOrderModal.value = false;
+    } else {
+      alert(responseData.detail || 'Failed to create order');
+    }
+  } catch (error) {
+    console.error('Error adding order:', error);
+    alert('Failed to create order. Please try again.');
+  }
+}
+
+async function updateOrderStatus(order) {
+  if (!order.newStatus || order.newStatus === order.status) return;
+  try {
+    console.log('Updating order status:', order.id, order.newStatus);
+    const response = await fetch(`http://localhost:8000/api/v1/orders/${order.id}/status/`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token.value}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status: order.newStatus })
+    });
+    console.log('Status update response:', response.status);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Status updated successfully:', data);
+      await fetchOrders();
+    } else {
+      const error = await response.json();
+      console.error('Failed to update status:', error);
+      alert(error.detail || 'Failed to update status');
+    }
+  } catch (error) {
+    console.error('Error updating status:', error);
+    alert('Failed to update status');
+  }
+}
+
+function viewCustomerDetails(order) {
+  selectedOrder.value = {
+    ...order,
+    customer: order.customer || {
+      first_name: order.customer_name,
+      last_name: '',
+      mobile_number: order.mobile_number,
+      email: ''
+    },
+    delivery: {
+      customer_name: order.customer_name,
+      mobile_number: order.mobile_number,
+      location: order.location,
+      address: order.location
+    }
+  };
+  showCustomerModal.value = true;
+}
+
+async function fetchAllOrders() {
+  try {
+    const response = await fetch('http://localhost:8000/api/v1/orders/all-details/', {
+      headers: { Authorization: `Bearer ${token.value}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Fetched all orders:', data);
+      allOrders.value = data;
+    } else {
+      allOrders.value = [];
+    }
+  } catch (error) {
+    allOrders.value = [];
+    console.error('Error fetching all orders:', error);
+  }
 }
 
 onMounted(() => {
   fetchActiveCakesCount();
   fetchMessages(true)
   fetchRecentActivity();
+  fetchOrders();
   if (window.lucide) window.lucide.createIcons()
 })
 
@@ -414,6 +920,10 @@ onUnmounted(() => {
   if (messageInterval) {
     clearInterval(messageInterval)
     messageInterval = null
+  }
+  if (ordersInterval) {
+    clearInterval(ordersInterval)
+    ordersInterval = null
   }
 })
 </script>
@@ -1065,5 +1575,213 @@ body {
   text-align: center;
   margin: 2rem 0;
   font-size: 1.1rem;
+}
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.status-badge.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+.status-badge.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.order-item-form {
+  margin-bottom: 10px;
+}
+.item-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.item-row input {
+  flex: 1;
+}
+.remove-item {
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-item-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.add-item-btn:hover {
+  background: #e5e7eb;
+}
+.cake-select {
+  flex: 2;
+  background: #23232b;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.quantity-input {
+  flex: 1;
+  min-width: 80px;
+}
+.price-input {
+  flex: 1;
+  min-width: 100px;
+}
+.total-input {
+  background: #2a2a35;
+  color: #fff;
+  font-weight: 600;
+}
+.status-select {
+  background: #23232b;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+  width: 100%;
+}
+.status-select:focus,
+.cake-select:focus {
+  border: 1.5px solid #ff6b35;
+}
+.customer-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.customer-input {
+  width: 100%;
+  background: #23232b;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.customer-input:focus {
+  border: 1.5px solid #ff6b35;
+}
+.customer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.customer-name {
+  font-weight: 600;
+  color: #fff;
+}
+.customer-contact {
+  color: #b0b0b8;
+  font-size: 0.9rem;
+}
+.customer-location {
+  color: #b0b0b8;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+.search-container {
+  position: relative;
+}
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #23232b;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+.search-result-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-result-item:hover {
+  background: #2a2a35;
+}
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+.customer-input.error {
+  border-color: #ef4444;
+}
+.location-input-container {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+.map-button {
+  background: #23232b;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.map-button:hover {
+  background: #2a2a35;
+}
+.map-container {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #24242e;
+}
+.map {
+  height: 300px;
+  width: 100%;
+}
+.map-search-input {
+  margin: 10px;
+  padding: 8px 12px;
+  border: 1px solid #24242e;
+  border-radius: 8px;
+  background: #23232b;
+  color: #fff;
+  font-size: 14px;
+  width: 250px;
+  outline: none;
+}
+.map-search-input:focus {
+  border-color: #ff6b35;
 }
 </style> 

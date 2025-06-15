@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.hashers import make_password
+from rest_framework.decorators import api_view, permission_classes
 
 class UserListCreateAPIView(APIView):
     permission_classes = [AllowAny]  # Allow registration without authentication
@@ -146,3 +147,21 @@ class StaffLoginView(APIView):
                 'is_customer': user.is_customer
             }
         })
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def customer_search(request):
+    query = request.GET.get('q', '')
+    if query:
+        customers = User.objects.filter(is_customer=True, username__icontains=query)
+    else:
+        customers = User.objects.filter(is_customer=True)
+    serializer = UserSerializer(customers, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def customer_list(request):
+    customers = User.objects.filter(is_customer=True)
+    serializer = UserSerializer(customers, many=True)
+    return Response(serializer.data)
